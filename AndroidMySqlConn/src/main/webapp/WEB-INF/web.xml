@@ -1,8 +1,20 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_2_5.xsd" version="2.5">
+<web-app xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns="http://java.sun.com/xml/ns/javaee" xsi:schemaLocation="http://java.sun.com/xml/ns/javaee http://java.sun.com/xml/ns/javaee/web-app_3_0.xsd" id="WebApp_ID" version="3.0">
   <context-param>
     <param-name>contextConfigLocation</param-name>
     <param-value>/WEB-INF/spring/root-context.xml</param-value>
+  </context-param>
+  <context-param>
+    <param-name>user</param-name>
+    <param-value>root</param-value>
+  </context-param>
+  <context-param>
+    <param-name>pwd</param-name>
+    <param-value>9967015</param-value>
+  </context-param>
+  <context-param>
+    <param-name>url</param-name>
+    <param-value>jdbc:mysql://localhost:3306/test</param-value>
   </context-param>
   <listener>
     <listener-class>org.springframework.web.context.ContextLoaderListener</listener-class>
@@ -29,5 +41,45 @@
   <servlet-mapping>
     <servlet-name>DBConnection</servlet-name>
     <url-pattern>/DBConnection</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>NoticeServlet</display-name>
+    <servlet-name>NoticeServlet</servlet-name>
+    <servlet-class>kr.baepro.android.servlet.NoticeServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>NoticeServlet</servlet-name>
+    <url-pattern>/NoticeServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>BusInfoServlet</display-name>
+    <servlet-name>BusInfoServlet</servlet-name>
+    <servlet-class>kr.baepro.android.servlet.BusInfoServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>BusInfoServlet</servlet-name>
+    <url-pattern>/BusInfoServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>BaseInfoServlet</display-name>
+    <servlet-name>BaseInfoServlet</servlet-name>
+    <servlet-class>kr.baepro.android.servlet.BaseInfoServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>BaseInfoServlet</servlet-name>
+    <url-pattern>/BaseInfoServlet</url-pattern>
+  </servlet-mapping>
+  <servlet>
+    <description></description>
+    <display-name>JejuBusInfoServlet</display-name>
+    <servlet-name>JejuBusInfoServlet</servlet-name>
+    <servlet-class>kr.baepro.android.servlet.JejuBusInfoServlet</servlet-class>
+  </servlet>
+  <servlet-mapping>
+    <servlet-name>JejuBusInfoServlet</servlet-name>
+    <url-pattern>/JejuBusInfoServlet</url-pattern>
   </servlet-mapping>
 </web-app>

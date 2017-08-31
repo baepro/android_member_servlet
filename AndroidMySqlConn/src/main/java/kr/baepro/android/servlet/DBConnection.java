@@ -3,7 +3,6 @@ package kr.baepro.android.servlet;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.sql.Connection;
-import java.sql.DriverManager;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
@@ -18,14 +17,14 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
-import kr.baepro.util.RequestUtil;
+//import kr.baepro.util.RequestUtil;
 
 //@WebServlet("/DBConnection")
 public class DBConnection extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	JSONObject json = new JSONObject();
-	RequestUtil requestUtil = new RequestUtil();
+	//RequestUtil requestUtil = new RequestUtil();
     
     public DBConnection() {
         super();
@@ -42,8 +41,42 @@ public class DBConnection extends HttpServlet {
 		String pwd = request.getParameter("pwd");
 		System.out.println("request id : " + id);
 		System.out.println("request pwd : " + pwd);
+		
+		Connection conn = (Connection) getServletContext().getAttribute("DBConnection");
+		
+		PreparedStatement ps = null;
+		ResultSet rs = null;
+		Boolean result = null;
+		
+		String sql = "select * from user where id=? and pwd=?";
+		
 		try {
-			readUser(id, pwd);
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, id);
+			ps.setString(2, pwd);
+			rs = ps.executeQuery();
+			
+			List<Map<String, String>> list = new ArrayList();
+			Map<String, String> map = null;
+			
+			int i = 0;
+			while (rs.next()) {
+				map = new HashMap();
+				map.put("id", rs.getString("id"));
+				map.put("pwd", rs.getString("pwd"));
+
+				list.add(map);
+				//System.out.println("list.size : " + list.size());
+			}
+			if(list.size()!=0) {
+				result = true;
+			} else {
+				result = false;
+			}
+			json.put("success", result);
+			json.put("rows", list);
+			
+			//readUser(id, pwd);
 			//System.out.println(json.getJSONArray("rows").length());
 			//System.out.println("json.toStirng() : " + json.toString());
 			response.setContentType("application/json");
@@ -52,8 +85,6 @@ public class DBConnection extends HttpServlet {
 			PrintWriter out = response.getWriter();
 			out.print(json);
 			out.flush();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
 		} catch (SQLException e) {
 			e.printStackTrace();
 		}
@@ -113,19 +144,29 @@ public class DBConnection extends HttpServlet {
 		String id = request.getParameter("id");
 		System.out.println("id : " + id);
 		
+		Connection conn = (Connection) getServletContext().getAttribute("DBConnection");
+		PreparedStatement ps = null;
+		String sql = "delete from user where id=?";
+		
 		try {
-			deleteUser(id);
-			response.setContentType("application/json");
-			response.setCharacterEncoding("UTF-8");
-			//response.getWriter().write(json.toString());
-			PrintWriter out = response.getWriter();
-			out.print(json);
-			out.flush();
-		} catch (ClassNotFoundException e) {
+			ps = conn.prepareStatement(sql);
+			ps.setString(1, id);
+			ps.executeUpdate();
+		} catch (Exception e) {
 			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
+		} finally {
+			try {
+				ps.close();
+			} catch (SQLException e) {
+				e.printStackTrace();
+			}
 		}
+		response.setContentType("application/json");
+		response.setCharacterEncoding("UTF-8");
+		//response.getWriter().write(json.toString());
+		PrintWriter out = response.getWriter();
+		out.print(json);
+		out.flush();
 	}
 
 	protected void doGetRegister(HttpServletRequest request, HttpServletResponse response) 
@@ -138,53 +179,9 @@ public class DBConnection extends HttpServlet {
 		String name = request.getParameter("name");
 		String age = request.getParameter("age");
 		//System.out.println("id=" + id + ", pwd=" + pwd + ", name=" + name + ", age=" + age);
-
-		try {
-			createUser(id, pwd, name, age);
-			//System.out.println("json.toStirng() : " + json.toString());
-			response.setContentType("application/json");
-			response.setCharacterEncoding("UTF-8");
-			//response.getWriter().write(json.toString());
-			PrintWriter out = response.getWriter();
-			out.print(json);
-			out.flush();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
 		
-	}
-
-	protected void doGetList(HttpServletRequest request, HttpServletResponse response) 
-			throws ServletException, IOException  {
+		Connection conn = (Connection) getServletContext().getAttribute("DBConnection");
 		
-		System.out.println("doGetList() method is called.");
-		
-		try {
-			userList();
-			//System.out.println(json.getJSONArray("rows").length());
-			System.out.println("json.toStirng() : " + json.toString());
-			response.setContentType("application/json");
-			response.setCharacterEncoding("UTF-8");
-			//response.getWriter().write(json.toString());
-			PrintWriter out = response.getWriter();
-			out.print(json);
-			out.flush();
-		} catch (ClassNotFoundException e) {
-			e.printStackTrace();
-		} catch (SQLException e) {
-			e.printStackTrace();
-		}
-		
-	}
-
-	private JSONObject createUser(String id, String pwd, String name, String age) 
-			throws ClassNotFoundException, SQLException {
-		
-		System.out.println("createUser() method is called.");
-		
-		Connection conn = getConnection();
 		PreparedStatement ps = null;
 		int rs = 0;
 		Boolean result = true;
@@ -199,34 +196,41 @@ public class DBConnection extends HttpServlet {
 			ps.setString(4, age);
 			rs = ps.executeUpdate();
 			
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
 			json.put("success", result);
+			//response.getWriter().write(json.toString());
+			PrintWriter out = response.getWriter();
+			out.print(json);
+			out.flush();
 		} catch (Exception e) {
 			e.printStackTrace();
 		} finally {
 			try {
 				ps.close();
-				conn.close();
-				//System.out.println("createUser() : mysql closed.");
 			} catch (SQLException e) {
 				e.printStackTrace();
 			}
 		}
 		
-		return json;
 	}
-	
-	private JSONObject userList() throws ClassNotFoundException, SQLException {
+
+	protected void doGetList(HttpServletRequest request, HttpServletResponse response) 
+			throws ServletException, IOException  {
 		
-		System.out.println("userList() method is called.");
+		System.out.println("doGetList() method is called.");
 		
-		Connection conn = getConnection();
+		Connection conn = (Connection) getServletContext().getAttribute("DBConnection");
+		
 		PreparedStatement ps = null;
 		ResultSet rs = null;
 		Boolean result = null;
 		
 		String sql = "select id, pwd, name, age from user;";
+		
 		try {
-			//System.out.println("userList() : mysql connected.");
+			//userList();
+			//System.out.println(json.getJSONArray("rows").length());
 			ps = conn.prepareStatement(sql);
 			rs = ps.executeQuery();
 			
@@ -248,116 +252,17 @@ public class DBConnection extends HttpServlet {
 				json.put("rows", list);
 				//System.out.println(json.toString());
 			}
-		} catch(Exception e) {
+			System.out.println("json.toStirng() : " + json.toString());
+			response.setContentType("application/json");
+			response.setCharacterEncoding("UTF-8");
+			//response.getWriter().write(json.toString());
+			PrintWriter out = response.getWriter();
+			out.print(json);
+			out.flush();
+		} catch (SQLException e) {
 			e.printStackTrace();
-		} finally {
-			try {
-				ps.close();
-				conn.close();
-				rs.close();
-				//System.out.println("userList() : mysql closed.");
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
 		}
-		return json;
 		
 	}
 	
-	private JSONObject readUser(String id, String pwd) throws ClassNotFoundException, SQLException {
-
-		System.out.println("readUser() method is called.");
-		
-		Connection conn = getConnection();
-		PreparedStatement ps = null;
-		ResultSet rs = null;
-		Boolean result = null;
-		
-		String sql = "select * from user where id=? and pwd=?";
-		try {
-			//System.out.println("readUser() : mysql connected.");
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, id);
-			ps.setString(2, pwd);
-			rs = ps.executeQuery();
-			
-			List<Map<String, String>> list = new ArrayList();
-			Map<String, String> map = null;
-			
-			int i = 0;
-			while (rs.next()) {
-				map = new HashMap();
-				map.put("id", rs.getString("id"));
-				map.put("pwd", rs.getString("pwd"));
-
-				list.add(map);
-				//System.out.println("list.size : " + list.size());
-			}
-			if(list.size()!=0) {
-				result = true;
-			} else {
-				result = false;
-			}
-			json.put("success", result);
-			json.put("rows", list);
-			//System.out.println(list);//[{id=baepro, pwd=1234}]
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ps.close();
-				conn.close();
-				rs.close();
-				//System.out.println("readUser() : mysql closed.");
-				
-				//json.put("success", true);
-				//System.out.println(json.toString());//{"success":true,"rows":[{"id":"baepro","pwd":"1234"}]}
-				
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		return json;
-	}
-	
-	private JSONObject deleteUser(String id) throws ClassNotFoundException, SQLException {
-
-		System.out.println("deleteUser() method is called.");
-		
-		Connection conn = getConnection();
-		PreparedStatement ps = null;
-		int rs = 0;
-		
-		String sql = "delete from user where id=?";
-		try {
-			System.out.println("deleteUser() : mysql connected.");
-			ps = conn.prepareStatement(sql);
-			ps.setString(1, id);
-			rs = ps.executeUpdate();
-			
-		} catch (Exception e) {
-			e.printStackTrace();
-		} finally {
-			try {
-				ps.close();
-				conn.close();
-				System.out.println("deleteUser() : mysql closed.");
-			} catch (SQLException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		return json;
-		
-	}
-	
-	private Connection getConnection() throws ClassNotFoundException, SQLException {
-		Class.forName("com.mysql.jdbc.Driver");
-		Connection c = DriverManager.getConnection("jdbc:mysql://localhost:3306/test", "root", "9967015");
-		
-		return c;
-	}
-
 }

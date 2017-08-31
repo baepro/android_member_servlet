@@ -17,14 +17,11 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.json.JSONObject;
 
-//import kr.baepro.util.RequestUtil;
-
 //@WebServlet("/DBConnection")
 public class DBConnection extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	
 	JSONObject json = new JSONObject();
-	//RequestUtil requestUtil = new RequestUtil();
     
     public DBConnection() {
         super();
@@ -32,9 +29,7 @@ public class DBConnection extends HttpServlet {
 
 	protected void doGetLogin(HttpServletRequest request, HttpServletResponse response) 
 			throws ServletException, IOException {
-		
 		System.out.println("doGetLogin(); method is called.");
-
 		//response.getWriter().append("Served at: ").append(request.getContextPath());
 		
 		String id = request.getParameter("id");
@@ -99,7 +94,6 @@ public class DBConnection extends HttpServlet {
 
 	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
 			throws ServletException, IOException {
-	
 		//doGet(request, response);
 		
 		request.setCharacterEncoding("UTF-8");
